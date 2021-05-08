@@ -160,3 +160,4 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
         nextTrackIndex = (nextTrackIndex + 1) % tracks.size();
     }
 }
+

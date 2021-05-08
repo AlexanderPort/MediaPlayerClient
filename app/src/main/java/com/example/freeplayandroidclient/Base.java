@@ -150,6 +150,7 @@ public class Base extends AppCompatActivity implements
             if (thread != null) thread.join();
         } catch (InterruptedException exception) {
             exception.printStackTrace();
+
         }
     }
 
@@ -190,3 +191,4 @@ public class Base extends AppCompatActivity implements
         return !currentTrackName.equals("") && !currentArtistName.equals("");
     }
 }
+

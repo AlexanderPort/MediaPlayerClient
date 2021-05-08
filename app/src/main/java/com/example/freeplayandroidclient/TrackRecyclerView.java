@@ -176,3 +176,4 @@ public class TrackRecyclerView extends RecyclerView implements
         trackAdapter.clearItems();
     }
 }
+
