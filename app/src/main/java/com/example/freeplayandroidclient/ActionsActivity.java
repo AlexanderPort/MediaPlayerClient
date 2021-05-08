@@ -63,7 +63,7 @@ public class ActionsActivity extends Base {
 
         databaseHelper = new DatabaseHelper(getBaseContext());
 
-        File file = new File(String.format("%s/images/%s-big.jpg", getFilesDir(), trackId));
+        File file = new File(String.format("%s/images/%s.jpg", getFilesDir(), trackId));
         if (file.exists()) {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
             thumbnailView.setImageBitmap(bitmap);
@@ -74,9 +74,8 @@ public class ActionsActivity extends Base {
                     thumbnailView.setImageBitmap(response);
                 }
             };
-            api.getThumbnail(trackId, "big", imageListener);
+            api.getThumbnail(trackId, 600, 600, imageListener);
         }
-
         onPrepared(mediaPlayer);
     }
 
@@ -97,8 +96,7 @@ public class ActionsActivity extends Base {
                 }
             };
             api.getTrackData(trackId, listener, errorListener);
-            saveThumbnail(trackId, "big");
-            saveThumbnail(trackId, "small");
+            saveThumbnail(trackId, 600, 600);
         }
     }
     public void saveTrack(byte[] bytes, String filename) {
@@ -118,13 +116,13 @@ public class ActionsActivity extends Base {
             exception.printStackTrace();
         }
     }
-    public void saveThumbnail(String trackId, String mode) {
+    public void saveThumbnail(String trackId, int maxWidth, int maxHeight) {
         Response.Listener<Bitmap> imageListener = new Response.Listener<Bitmap>() {
             @Override
             public void onResponse(Bitmap response) {
                 File directory = new File(getFilesDir() + "/images/");
                 if (!directory.exists()) { boolean status = directory.mkdir(); }
-                String filename = String.format("%s/images/%s-%s.jpg", getFilesDir(), trackId, mode);
+                String filename = String.format("%s/images/%s.jpg", getFilesDir(), trackId);
                 try (FileOutputStream out = new FileOutputStream(filename)) {
                     response.compress(Bitmap.CompressFormat.JPEG, 100, out);
                 } catch (IOException exception) {
@@ -132,6 +130,6 @@ public class ActionsActivity extends Base {
                 }
             }
         };
-        api.getThumbnail(trackId, mode, imageListener);
+        api.getThumbnail(trackId, maxWidth, maxHeight, imageListener);
     }
 }

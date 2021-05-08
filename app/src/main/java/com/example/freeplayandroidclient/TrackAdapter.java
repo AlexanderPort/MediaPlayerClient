@@ -105,8 +105,14 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
         Track track = tracks.get(position);
         track.setViewHolder(viewHolder);
-        viewHolder.getTrackName().setText(track.getTrackName());
-        viewHolder.getArtistName().setText(track.getArtistName());
+        String trackName = track.getTrackName();
+        String artistName = track.getArtistName();
+        if (trackName.length() > 25)
+            trackName = trackName.substring(0, 25) + "...";
+        if (artistName.length() > 25)
+            artistName = artistName.substring(0, 25) + "...";
+        viewHolder.getTrackName().setText(trackName);
+        viewHolder.getArtistName().setText(artistName);
         if (track.getThumbnail() != null) {
             viewHolder.setThumbnail(track.getThumbnail());
         }

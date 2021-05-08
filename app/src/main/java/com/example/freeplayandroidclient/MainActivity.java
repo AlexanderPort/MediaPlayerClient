@@ -40,7 +40,7 @@ public class MainActivity extends Base {
             }
         };
         api.getRandomTracks(10, jsonObjectListener, errorListener);
-        trackRecyclerView = findViewById(R.id.tracksRecyclerView);
+        trackRecyclerView = findViewById(R.id.trackRecyclerView);
         onPrepared(mediaPlayer);
     }
     @Override

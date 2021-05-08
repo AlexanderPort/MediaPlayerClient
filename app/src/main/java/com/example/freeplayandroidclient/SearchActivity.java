@@ -14,11 +14,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SearchActivity extends Base {
+    enum SEARCH_MODE {
+        TRACKS,
+        ALBUMS,
+        ARTISTS
+    }
     private API api;
     private Chip tracksChip;
     private Chip albumsChip;
     private Chip artistsChip;
     private EditText searchView;
+    private SEARCH_MODE search_mode;
     private TrackRecyclerView trackRecyclerView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,14 +32,17 @@ public class SearchActivity extends Base {
         setContentView(R.layout.activity_search);
 
         api = new API(getBaseContext());
+        search_mode = SEARCH_MODE.TRACKS;
 
         tracksChip = (Chip) findViewById(R.id.trackChip);
         albumsChip = (Chip) findViewById(R.id.albumsChip);
         artistsChip = (Chip) findViewById(R.id.artistsChip);
         searchView = (EditText) findViewById(R.id.search);
-        trackRecyclerView = (TrackRecyclerView) findViewById(R.id.tracksRecyclerView);
+        trackRecyclerView = findViewById(R.id.trackRecyclerView);
 
-        Response.Listener<JSONObject> tracksListener = new Response.Listener<JSONObject>() {
+        tracksChip.setAlpha(0.9f);
+
+        Response.Listener<JSONObject> jsonObjectListener = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
@@ -45,18 +54,6 @@ public class SearchActivity extends Base {
                 } catch (JSONException exception) {
                     exception.printStackTrace();
                 }
-            }
-        };
-        Response.Listener<JSONObject> albumsListener = new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-
-            }
-        };
-        Response.Listener<JSONObject> artistsListener = new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-
             }
         };
         Response.ErrorListener errorListener = new Response.ErrorListener() {
@@ -76,11 +73,16 @@ public class SearchActivity extends Base {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
             }
-
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.length() == 0) return;
-                api.searchTracksByName(s.toString(), tracksListener, errorListener);
+                if (s.length() == 0) trackRecyclerView.clear();
+                if (search_mode == SEARCH_MODE.TRACKS) {
+                    api.searchTrackByName(s.toString(), jsonObjectListener, errorListener);
+                } else if (search_mode == SEARCH_MODE.ALBUMS) {
+                    api.searchAlbumByName(s.toString(), jsonObjectListener, errorListener);
+                } else if (search_mode == SEARCH_MODE.ARTISTS) {
+                    api.searchArtistByName(s.toString(), jsonObjectListener, errorListener);
+                }
             }
         });
         tracksChip.setOnClickListener(this);
@@ -98,14 +100,17 @@ public class SearchActivity extends Base {
             tracksChip.setAlpha(0.9f);
             albumsChip.setAlpha(0.5f);
             artistsChip.setAlpha(0.5f);
+            search_mode = SEARCH_MODE.TRACKS;
         } else if (view.getId() == albumsChip.getId()) {
             tracksChip.setAlpha(0.5f);
             albumsChip.setAlpha(0.9f);
             artistsChip.setAlpha(0.5f);
+            search_mode = SEARCH_MODE.ALBUMS;
         } else if (view.getId() == artistsChip.getId()) {
             tracksChip.setAlpha(0.5f);
             albumsChip.setAlpha(0.5f);
             artistsChip.setAlpha(0.9f);
+            search_mode = SEARCH_MODE.ARTISTS;
         }
     }
 }

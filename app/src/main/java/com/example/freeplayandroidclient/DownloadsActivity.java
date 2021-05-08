@@ -12,7 +12,7 @@ public class DownloadsActivity extends Base {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         databaseHelper = new DatabaseHelper(getBaseContext());
-        trackRecyclerView = findViewById(R.id.tracksRecyclerView);
+        trackRecyclerView = findViewById(R.id.trackRecyclerView);
         trackRecyclerView.addTracks(databaseHelper.selectAllTracks());
         onPrepared(mediaPlayer);
     }

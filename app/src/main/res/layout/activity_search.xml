@@ -56,7 +56,7 @@
 
         </com.google.android.material.chip.ChipGroup>
         <com.example.freeplayandroidclient.TrackRecyclerView
-            android:id="@+id/tracksRecyclerView"
+            android:id="@+id/trackRecyclerView"
             android:layout_weight="25"
             android:layout_gravity="top"
             android:layout_width="match_parent"

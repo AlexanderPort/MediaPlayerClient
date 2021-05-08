@@ -2,6 +2,7 @@ package com.example.freeplayandroidclient;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Size;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -34,16 +35,14 @@ public class API {
                 getRandomTracksURL(k), null, listener, errorListener);
         requestQueue.add(jsonObjectRequest);
     }
-    public void getThumbnail(String id, String mode,
+    public void getThumbnail(String id, int maxWidth, int maxHeight,
                              Response.Listener<Bitmap> listener) {
-        int maxWidth = 300, maxHeight = 300;
-        if (mode.equals("big")) { maxWidth = 600; maxHeight = 600; }
-        ImageRequest imageRequest = new ImageRequest(getThumbnailURL(id, mode),
+        ImageRequest imageRequest = new ImageRequest(getThumbnailURL(id),
                 listener, maxWidth, maxHeight, null, null);
         requestQueue.add(imageRequest);
     }
-    public static String getThumbnailURL(String id, String mode) {
-        return String.format("%s/api/tracks/thumbnail/%s/%s", API, id, mode);
+    public static String getThumbnailURL(String id) {
+        return String.format("%s/api/tracks/thumbnail/%s", API, id);
     }
     public static String getTrackDataURL(String id) {
         return String.format("%s/api/tracks/data/%s", API, id);
@@ -51,7 +50,7 @@ public class API {
     public static String getRandomTracksURL(int k) {
         return String.format("%s/api/tracks/random/%s", API, k);
     }
-    public void searchTracksByName(String key,
+    public void searchTrackByName(String key,
                                    Response.Listener<JSONObject> listener,
                                    Response.ErrorListener errorListener) {
         String url = String.format("%s/api/search/tracks/%s", API, key);
@@ -59,4 +58,21 @@ public class API {
                 url, null, listener, errorListener);
         requestQueue.add(jsonObjectRequest);
     }
+    public void searchAlbumByName(String key,
+                                  Response.Listener<JSONObject> listener,
+                                  Response.ErrorListener errorListener) {
+        String url = String.format("%s/api/search/albums/%s", API, key);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                url, null, listener, errorListener);
+        requestQueue.add(jsonObjectRequest);
+    }
+    public void searchArtistByName(String key,
+                                   Response.Listener<JSONObject> listener,
+                                   Response.ErrorListener errorListener) {
+        String url = String.format("%s/api/search/artists/%s", API, key);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                url, null, listener, errorListener);
+        requestQueue.add(jsonObjectRequest);
+    }
+
 }

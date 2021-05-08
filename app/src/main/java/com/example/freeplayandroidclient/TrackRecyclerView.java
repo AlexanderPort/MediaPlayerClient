@@ -93,19 +93,23 @@ public class TrackRecyclerView extends RecyclerView implements
         TrackAdapter.Track track = new TrackAdapter.Track(
                 trackId, trackName, albumId, albumName, artistId, artistName);
         track.setOnClickListener(onClickListener);
-        File file = new File(String.format("%s/images/%s-small.jpg",
+        File file = new File(String.format("%s/images/%s.jpg",
                 getContext().getFilesDir(), trackId));
         if (file.exists()) {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
+            bitmap = Bitmap.createScaledBitmap(bitmap,
+                    200, 200, false);
             track.setThumbnail(bitmap);
         } else {
             Response.Listener<Bitmap> imageListener = new Response.Listener<Bitmap>() {
                 @Override
                 public void onResponse(Bitmap response) {
+                    response = Bitmap.createScaledBitmap(response,
+                            200, 200, false);
                     track.setThumbnail(response);
                 }
             };
-            api.getThumbnail(trackId, "small", imageListener);
+            api.getThumbnail(trackId, 1000, 1000, imageListener);
         }
         tracks.add(track);
     }
@@ -141,7 +145,6 @@ public class TrackRecyclerView extends RecyclerView implements
         mp.reset();
         if (tracks.size() > 0) {
             try {
-
                 TrackAdapter.Track track = trackAdapter.getNextTrack();
                 String trackId = track.getTrackId();
                 Context context = getContext();
@@ -162,7 +165,6 @@ public class TrackRecyclerView extends RecyclerView implements
                 exception.printStackTrace();
             }
         }
-
     }
     @Override
     public void onPrepared(MediaPlayer mp) {
