@@ -1,4 +1,4 @@
-package com.example.mediaplayerclient;
+package com.example.freeplayandroidclient;
 
 import androidx.annotation.NonNull;
 

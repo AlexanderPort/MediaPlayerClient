@@ -1,9 +1,7 @@
-package com.example.mediaplayerclient;
+package com.example.freeplayandroidclient;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-
-import java.io.IOException;
 
 public class MediaPlayerService implements
         MediaPlayer.OnPreparedListener,

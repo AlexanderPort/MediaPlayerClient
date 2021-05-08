@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name = "MediaPlayerClient"
+rootProject.name = "FreePlayAndroidClient"

@@ -1,4 +1,4 @@
-package com.example.mediaplayerclient;
+package com.example.freeplayandroidclient;
 
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
@@ -9,7 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -52,7 +51,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
             thumbnail.setImageBitmap(bitmap);
         }
     }
-    public static class Track extends com.example.mediaplayerclient.Track {
+    public static class Track extends com.example.freeplayandroidclient.Track {
         private Bitmap thumbnail;
         private ViewHolder viewHolder;
         private OnClickListener onClickListener;
@@ -61,7 +60,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
                      String artistId, String artistName) {
             super(trackId, trackName, albumId, albumName, artistId, artistName);
         }
-        public Track(com.example.mediaplayerclient.Track track) {
+        public Track(com.example.freeplayandroidclient.Track track) {
             super(track);
         }
         public Bitmap getThumbnail() {

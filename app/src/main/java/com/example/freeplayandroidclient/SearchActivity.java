@@ -1,6 +1,4 @@
-package com.example.mediaplayerclient;
-
-import androidx.appcompat.app.AppCompatActivity;
+package com.example.freeplayandroidclient;
 
 import android.os.Bundle;
 import android.text.Editable;

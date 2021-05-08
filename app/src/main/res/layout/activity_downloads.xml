@@ -11,7 +11,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <com.example.mediaplayerclient.TrackRecyclerView
+        <com.example.freeplayandroidclient.TrackRecyclerView
             android:id="@+id/tracksRecyclerView"
             android:layout_weight="10"
             android:layout_gravity="top"
@@ -19,7 +19,7 @@
             android:layout_height="match_parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
-        </com.example.mediaplayerclient.TrackRecyclerView>
+        </com.example.freeplayandroidclient.TrackRecyclerView>
 
         <include
             layout="@layout/activity_base"

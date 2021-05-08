@@ -1,7 +1,5 @@
-package com.example.mediaplayerclient;
+package com.example.freeplayandroidclient;
 
-
-import androidx.annotation.NonNull;
 
 public class Track {
     protected final String trackId;

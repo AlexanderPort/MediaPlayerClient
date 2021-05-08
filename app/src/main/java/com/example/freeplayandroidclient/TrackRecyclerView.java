@@ -1,4 +1,4 @@
-package com.example.mediaplayerclient;
+package com.example.freeplayandroidclient;
 
 import android.content.Context;
 import android.content.Intent;
