@@ -7,27 +7,23 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 
 public class MainActivity extends Base {
-    private API api;
     private TrackRecyclerView trackRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        api = new API(getBaseContext());
-        Response.Listener<JSONObject> jsonObjectListener = new Response.Listener<JSONObject>() {
+        Response.Listener<JSONArray> jsonObjectListener = new Response.Listener<JSONArray>() {
             @Override
-            public void onResponse(JSONObject response) {
+            public void onResponse(JSONArray response) {
                 try {
-                    boolean status = response.getBoolean("status");
-                    if (status) {
-                        trackRecyclerView.addTracks(response);
-                    }
+                    trackRecyclerView.addTracks(response);
                 } catch (JSONException exception) {
                     exception.printStackTrace();
                 }
@@ -39,7 +35,8 @@ public class MainActivity extends Base {
                 error.printStackTrace();
             }
         };
-        api.getRandomTracks(10, jsonObjectListener, errorListener);
+        api.getAllTracks(null, null, null,
+                jsonObjectListener, errorListener);
         trackRecyclerView = findViewById(R.id.trackRecyclerView);
         onPrepared(mediaPlayer);
     }

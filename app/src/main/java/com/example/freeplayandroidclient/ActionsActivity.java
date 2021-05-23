@@ -3,11 +3,14 @@ package com.example.freeplayandroidclient;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.core.content.FileProvider;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -17,13 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class ActionsActivity extends Base {
-    private API api;
-    private String trackId;
-    private String trackName;
-    private String albumId;
-    private String albumName;
-    private String artistId;
-    private String artistName;
+    private Track track;
     private TextView shareView;
     private TextView downloadView;
     private TextView trackNameView;
@@ -38,7 +35,6 @@ public class ActionsActivity extends Base {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_actions);
-        api = new API(getBaseContext());
         shareView = (TextView) findViewById(R.id.share);
         downloadView = (TextView) findViewById(R.id.download);
         trackNameView = (TextView) findViewById(R.id.trackName);
@@ -48,33 +44,40 @@ public class ActionsActivity extends Base {
         goToArtistView = (TextView) findViewById(R.id.goToArtist);
         addInFavouritesView = (TextView) findViewById(R.id.addInFavourites);
 
+        shareView.setOnClickListener(this);
         downloadView.setOnClickListener(this);
+        goToArtistView.setOnClickListener(this);
 
         Intent intent = getIntent();
-        trackId = intent.getStringExtra("trackId");
-        trackName = intent.getStringExtra("trackName");
-        albumId = intent.getStringExtra("albumId");
-        albumName = intent.getStringExtra("albumName");
-        artistId = intent.getStringExtra("artistId");
-        artistName = intent.getStringExtra("artistName");
+        track = new Track(
+                intent.getStringExtra("trackId"),
+                intent.getStringExtra("trackName"),
+                intent.getStringExtra("trackDataFormat"),
+                intent.getStringExtra("trackImageFormat"));
+        track.addAlbum(new Album(
+                intent.getStringExtra("albumId"),
+                intent.getStringExtra("albumName")));
+        track.addArtist(new Artist(
+                intent.getStringExtra("artistId"),
+                intent.getStringExtra("artistName")));
 
-        trackNameView.setText(trackName);
-        artistNameView.setText(artistName);
+        trackNameView.setText(track.getTrackName());
+        artistNameView.setText(track.getArtists().get(0).getArtistName());
 
         databaseHelper = new DatabaseHelper(getBaseContext());
 
-        File file = new File(String.format("%s/images/%s.jpg", getFilesDir(), trackId));
+        File file = new File(String.format("%s/images/%s.jpg", getFilesDir(), track.getTrackId()));
         if (file.exists()) {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
             thumbnailView.setImageBitmap(bitmap);
         } else {
-            Response.Listener<Bitmap> imageListener = new Response.Listener<Bitmap>() {
+            Response.Listener<Bitmap> listener = new Response.Listener<Bitmap>() {
                 @Override
                 public void onResponse(Bitmap response) {
                     thumbnailView.setImageBitmap(response);
                 }
             };
-            api.getThumbnail(trackId, 600, 600, imageListener);
+            api.getTrackImage(track.getTrackId(), 650, 650, listener);
         }
         onPrepared(mediaPlayer);
     }
@@ -82,11 +85,11 @@ public class ActionsActivity extends Base {
     @Override
     public void onClick(View view) {
         super.onClick(view);
-        if (view.getId() == R.id.download) {
+        if (view.getId() == downloadView.getId()) {
             Response.Listener<byte[]> listener = new Response.Listener<byte[]>() {
                 @Override
                 public void onResponse(byte[] response) {
-                    saveTrack(response, trackId);
+                    saveTrack(response, track.getTrackId());
                 }
             };
             Response.ErrorListener errorListener = new Response.ErrorListener() {
@@ -95,17 +98,40 @@ public class ActionsActivity extends Base {
                     error.printStackTrace();
                 }
             };
-            api.getTrackData(trackId, listener, errorListener);
-            saveThumbnail(trackId, 600, 600);
+            api.getTrackData(track.getTrackId(), listener, errorListener);
+            saveThumbnail(track.getTrackId(), 650, 650);
+        } else if (view.getId() == goToArtistView.getId()) {
+            Intent intent = new Intent(ActionsActivity.this, ArtistActivity.class);
+            intent.putExtra("artistId", track.getArtists().get(0).getArtistId());
+            intent.putExtra("artistName", track.getArtists().get(0).getArtistName());
+            startActivity(intent);
+        } else if (view.getId() == shareView.getId()) {
+            if (track == null) return;
+            Intent shareIntent = new Intent();
+            shareIntent.setAction(Intent.ACTION_SEND);
+            File file = new File(getFilesDir() + "/tracks",
+                    track.getTrackId() + "." + track.getTrackDataFormat());
+            if (file.exists()) {
+                Uri uri = FileProvider.getUriForFile(getApplicationContext(),
+                        "com.example.freeplayandroidclient.provider", file);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            } else {
+                String url = api.getTrackDataURL(track.getTrackId());
+                shareIntent.putExtra(Intent.EXTRA_STREAM, url);
+            }
+            shareIntent.setType("audio/*");
+            startActivity(Intent.createChooser(shareIntent, track.getTrackName()));
         }
     }
     public void saveTrack(byte[] bytes, String filename) {
-        databaseHelper.insertArtist(artistId, artistName);
-        databaseHelper.insertAlbum(albumId, albumName, artistId);
-        databaseHelper.insertTrack(trackId, trackName, albumId, artistId);
+        Album album = track.getAlbums().get(0);
+        Artist artist = track.getArtists().get(0);
+        databaseHelper.insertArtist(artist);
+        databaseHelper.insertAlbum(album);
+        databaseHelper.insertTrack(track);
         File directory = new File(getFilesDir() + "/tracks/");
         if (!directory.exists()) { boolean status = directory.mkdir(); }
-        filename = getFilesDir() + "/tracks/" + filename + ".mp3";
+        filename = getFilesDir() + "/tracks/" + filename + "." + track.getTrackDataFormat();
         try {
             File file = new File(filename);
             if (!file.exists()) { boolean status = file.createNewFile(); }
@@ -117,7 +143,7 @@ public class ActionsActivity extends Base {
         }
     }
     public void saveThumbnail(String trackId, int maxWidth, int maxHeight) {
-        Response.Listener<Bitmap> imageListener = new Response.Listener<Bitmap>() {
+        Response.Listener<Bitmap> listener = new Response.Listener<Bitmap>() {
             @Override
             public void onResponse(Bitmap response) {
                 File directory = new File(getFilesDir() + "/images/");
@@ -130,6 +156,6 @@ public class ActionsActivity extends Base {
                 }
             }
         };
-        api.getThumbnail(trackId, maxWidth, maxHeight, imageListener);
+        api.getTrackImage(trackId, 650, 650, listener);
     }
 }

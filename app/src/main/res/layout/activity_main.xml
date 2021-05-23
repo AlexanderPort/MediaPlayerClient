@@ -7,25 +7,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-    <LinearLayout
+    <RelativeLayout
         android:weightSum="100"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <com.example.freeplayandroidclient.TrackRecyclerView
             android:id="@+id/trackRecyclerView"
-            android:layout_weight="15"
-            android:layout_gravity="top"
+            android:layout_above="@+id/menu"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_gravity="top">
+
         </com.example.freeplayandroidclient.TrackRecyclerView>
 
         <include
+            android:id="@+id/menu"
             layout="@layout/activity_base"
-            android:layout_weight="85"
-            android:layout_gravity="bottom"
+            android:layout_alignParentBottom="true"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
         </include>
-    </LinearLayout>
+
+    </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

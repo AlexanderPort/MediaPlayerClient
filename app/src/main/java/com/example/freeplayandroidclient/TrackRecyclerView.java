@@ -17,10 +17,8 @@ import com.android.volley.Response;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,8 +51,8 @@ public class TrackRecyclerView extends RecyclerView implements
         this.trackAdapter = trackAdapter;
     }
     public void addTrack(String trackId, String trackName,
-                          String albumId, String albumName,
-                          String artistId, String artistName) {
+                         String trackDataFormat, String trackImageFormat,
+                         List<Album> albums, List<Artist> artists) {
         TrackAdapter.Track.OnClickListener onClickListener =
                 new TrackAdapter.Track.OnClickListener() {
                     @Override
@@ -62,36 +60,28 @@ public class TrackRecyclerView extends RecyclerView implements
                         Context context = getContext();
                         if (view.getId() == R.id.play) {
                             if (context instanceof Base) {
-                                ((Base) context).setTrackArtist(trackName, artistName);
-                            }
-                            MediaPlayer mediaPlayer = Base.getMediaPlayer();
-                            if (mediaPlayer == null) return; mediaPlayer.reset();
-                            try {
-                                File file = new File(String.format("%s/tracks/%s.mp3",
-                                        context.getFilesDir(), trackId));
-                                if (file.exists()) {
-                                    mediaPlayer.setDataSource(file.getPath());
-                                } else {
-                                    mediaPlayer.setDataSource(API.getTrackDataURL(trackId));
-                                }
-                                mediaPlayer.prepare();
-                            } catch (IOException exception) {
-                                exception.printStackTrace();
+                                ((Base) context).setCurrentTrack(
+                                        trackId, trackName, trackDataFormat,
+                                        trackImageFormat, albums, artists);
+                                ((Base) context).runCurrentTrack();
                             }
                         } else if (view.getId() == R.id.actions) {
                             Intent intent = new Intent(context, ActionsActivity.class);
                             intent.putExtra("trackId", trackId);
                             intent.putExtra("trackName", trackName);
-                            intent.putExtra("albumId", albumId);
-                            intent.putExtra("albumName", albumName);
-                            intent.putExtra("artistId", artistId);
-                            intent.putExtra("artistName", artistName);
+                            intent.putExtra("trackDataFormat", trackDataFormat);
+                            intent.putExtra("trackImageFormat", trackImageFormat);
+                            intent.putExtra("albumId", albums.get(0).getAlbumId());
+                            intent.putExtra("albumName", albums.get(0).getAlbumName());
+                            intent.putExtra("artistId", artists.get(0).getArtistId());
+                            intent.putExtra("artistName", artists.get(0).getArtistName());
                             getContext().startActivity(intent);
                         }
                     }
                 };
         TrackAdapter.Track track = new TrackAdapter.Track(
-                trackId, trackName, albumId, albumName, artistId, artistName);
+                trackId, trackName, trackDataFormat,
+                trackImageFormat, albums, artists);
         track.setOnClickListener(onClickListener);
         File file = new File(String.format("%s/images/%s.jpg",
                 getContext().getFilesDir(), trackId));
@@ -101,68 +91,37 @@ public class TrackRecyclerView extends RecyclerView implements
                     200, 200, false);
             track.setThumbnail(bitmap);
         } else {
-            Response.Listener<Bitmap> imageListener = new Response.Listener<Bitmap>() {
+            Response.Listener<Bitmap> listener = new Response.Listener<Bitmap>() {
                 @Override
-                public void onResponse(Bitmap response) {
-                    response = Bitmap.createScaledBitmap(response,
-                            200, 200, false);
-                    track.setThumbnail(response);
-                }
+                public void onResponse(Bitmap response) { track.setThumbnail(response); }
             };
-            api.getThumbnail(trackId, 1000, 1000, imageListener);
+            api.getTrackImage(trackId, 200, 200, listener);
         }
         tracks.add(track);
     }
     public void addTrack(Track track) {
-        addTrack(track.getTrackId(), track.getTrackName(),
-                track.getAlbumId(), track.getAlbumName(),
-                track.getArtistId(), track.getArtistName());
+        addTrack(track.getTrackId(), track.getTrackName(), track.getTrackDataFormat(),
+                track.getTrackImageFormat(), track.getAlbums(), track.getArtists());
     }
     public void addTracks(List<Track> tracks) {
         for (Track track : tracks) addTrack(track);
         trackAdapter.setItems(this.tracks);
         trackAdapter.notifyDataSetChanged();
     }
-    public void addTracks(JSONObject response) throws JSONException {
-        JSONArray tracks = response.getJSONArray("tracks");
-        for (int i = 0; i < tracks.length(); i++) {
-            JSONObject track = (JSONObject) tracks.get(i);
-            String trackId = track.getString("trackId");
-            String trackName = track.getString("trackName");
-            String artistId = track.getString("artistId");
-            String artistName = track.getString("artistName");
-            String albumId = track.getString("albumId");
-            String albumName = track.getString("albumName");
-            addTrack(trackId, trackName,
-                    albumId, albumName,
-                    artistId, artistName);
-        }
+    public void addTracks(JSONArray response) throws JSONException {
+        addTracks(Track.fromJSON(response));
         trackAdapter.setItems(this.tracks);
         trackAdapter.notifyDataSetChanged();
     }
     @Override
     public void onCompletion(MediaPlayer mp) {
-        mp.reset();
         if (tracks.size() > 0) {
-            try {
-                TrackAdapter.Track track = trackAdapter.getNextTrack();
-                String trackId = track.getTrackId();
-                Context context = getContext();
-                if (context instanceof Base) {
-                    ((Base) context).setTrackArtist(
-                            track.getTrackName(), track.getArtistName());
-                    trackAdapter.increaseNextTrackIndex();
-                }
-                String filename = String.format("%s/tracks/%s.mp3",
-                        getContext().getFilesDir(), trackId);
-                if (new File(filename).exists()) {
-                    mp.setDataSource(filename);
-                } else {
-                    mp.setDataSource(API.getTrackDataURL(trackId));
-                }
-                mp.prepare();
-            } catch (IOException exception) {
-                exception.printStackTrace();
+            TrackAdapter.Track track = trackAdapter.getNextTrack();
+            Context context = getContext();
+            if (context instanceof Base) {
+                ((Base) context).setCurrentTrack(track);
+                ((Base) context).runCurrentTrack();
+                trackAdapter.increaseNextTrackIndex();
             }
         }
     }

@@ -10,6 +10,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.google.android.material.chip.Chip;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,7 +20,6 @@ public class SearchActivity extends Base {
         ALBUMS,
         ARTISTS
     }
-    private API api;
     private Chip tracksChip;
     private Chip albumsChip;
     private Chip artistsChip;
@@ -31,7 +31,6 @@ public class SearchActivity extends Base {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        api = new API(getBaseContext());
         search_mode = SEARCH_MODE.TRACKS;
 
         tracksChip = (Chip) findViewById(R.id.trackChip);
@@ -42,15 +41,12 @@ public class SearchActivity extends Base {
 
         tracksChip.setAlpha(0.9f);
 
-        Response.Listener<JSONObject> jsonObjectListener = new Response.Listener<JSONObject>() {
+        Response.Listener<JSONArray> jsonObjectListener = new Response.Listener<JSONArray>() {
             @Override
-            public void onResponse(JSONObject response) {
+            public void onResponse(JSONArray response) {
                 try {
-                    boolean status = response.getBoolean("status");
-                    if (status) {
-                        trackRecyclerView.clear();
-                        trackRecyclerView.addTracks(response);
-                    }
+                    trackRecyclerView.clear();
+                    trackRecyclerView.addTracks(response);
                 } catch (JSONException exception) {
                     exception.printStackTrace();
                 }
@@ -77,11 +73,11 @@ public class SearchActivity extends Base {
             public void afterTextChanged(Editable s) {
                 if (s.length() == 0) trackRecyclerView.clear();
                 if (search_mode == SEARCH_MODE.TRACKS) {
-                    api.searchTrackByName(s.toString(), jsonObjectListener, errorListener);
+                    api.getAllTracks(s.toString(), null, null, jsonObjectListener, errorListener);
                 } else if (search_mode == SEARCH_MODE.ALBUMS) {
-                    api.searchAlbumByName(s.toString(), jsonObjectListener, errorListener);
+                    api.getAllTracks(null, s.toString(), null, jsonObjectListener, errorListener);
                 } else if (search_mode == SEARCH_MODE.ARTISTS) {
-                    api.searchArtistByName(s.toString(), jsonObjectListener, errorListener);
+                    api.getAllTracks(null, null, s.toString(), jsonObjectListener, errorListener);
                 }
             }
         });
@@ -95,7 +91,7 @@ public class SearchActivity extends Base {
     @Override
     public void onClick(View view) {
         super.onClick(view);
-
+        trackRecyclerView.clear();
         if (view.getId() == tracksChip.getId()) {
             tracksChip.setAlpha(0.9f);
             albumsChip.setAlpha(0.5f);

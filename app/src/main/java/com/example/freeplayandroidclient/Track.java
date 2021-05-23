@@ -1,30 +1,44 @@
 package com.example.freeplayandroidclient;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Track {
-    protected final String trackId;
-    protected final String trackName;
-    protected final String albumId;
-    protected final String albumName;
-    protected final String artistId;
-    protected final String artistName;
+    protected String trackId;
+    protected String trackName;
+    protected List<Album> albums;
+    protected List<Artist> artists;
+    protected String trackDataFormat;
+    protected String trackImageFormat;
     public Track(String trackId, String trackName,
-                 String albumId, String albumName,
-                 String artistId, String artistName) {
+                 String trackDataFormat, String trackImageFormat) {
         this.trackId = trackId;
         this.trackName = trackName;
-        this.albumId = albumId;
-        this.albumName = albumName;
-        this.artistId = artistId;
-        this.artistName = artistName;
+        this.albums = new ArrayList<>();
+        this.artists = new ArrayList<>();
+        this.trackDataFormat = trackDataFormat;
+        this.trackImageFormat = trackImageFormat;
+    }
+    public Track(String trackId, String trackName,
+                 String trackDataFormat, String trackImageFormat,
+                 List<Album> albums, List<Artist> artists) {
+        this.albums = albums;
+        this.artists = artists;
+        this.trackId = trackId;
+        this.trackName = trackName;
+        this.trackDataFormat = trackDataFormat;
+        this.trackImageFormat = trackImageFormat;
     }
     public Track(Track track) {
         this.trackId = track.getTrackId();
         this.trackName = track.getTrackName();
-        this.albumId = track.getAlbumId();
-        this.albumName = track.getAlbumName();
-        this.artistId = track.getArtistId();
-        this.artistName = track.getArtistName();
+        this.albums = track.getAlbums();
+        this.artists = track.getArtists();
     }
     public String getTrackId() {
         return trackId;
@@ -32,26 +46,46 @@ public class Track {
     public String getTrackName() {
         return trackName;
     }
-    public String getAlbumId() {
-        return albumId;
+    public List<Album> getAlbums() {
+        return albums;
     }
-    public String getAlbumName() {
-        return albumName;
+    public List<Artist> getArtists() {
+        return artists;
     }
-    public String getArtistId() {
-        return artistId;
+    public void addAlbum(Album album) {
+        albums.add(album);
     }
-    public String getArtistName() {
-        return artistName;
+    public void addArtist(Artist artist) {
+        artists.add(artist);
+    }
+    public String getTrackDataFormat() {
+        return trackDataFormat;
+    }
+    public String getTrackImageFormat() {
+        return trackImageFormat;
+    }
+
+    public static Track fromJSON(JSONObject json) throws JSONException {
+        return new Track(
+                json.getString("trackId"),
+                json.getString("trackName"),
+                json.getString("trackDataFormat"),
+                json.getString("trackImageFormat"),
+                Album.fromJSON(json.getJSONArray("albums")),
+                Artist.fromJSON(json.getJSONArray("artists")));
+    }
+    public static List<Track> fromJSON(JSONArray json) throws JSONException {
+        List<Track> tracks = new ArrayList<>();
+        for (int i = 0; i < json.length(); i++) {
+            tracks.add(Track.fromJSON(json.getJSONObject(i)));
+        }
+        return tracks;
     }
 
     @Override
     public String toString() {
         return "Track{" +
-                "trackName='" + trackName + '\'' +
-                ", albumName='" + albumName + '\'' +
-                ", artistName='" + artistName + '\'' +
-                '}';
+                "trackName=" + trackName + "}";
     }
 }
 

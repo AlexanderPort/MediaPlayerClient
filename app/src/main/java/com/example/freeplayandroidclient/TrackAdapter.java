@@ -56,9 +56,10 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
         private ViewHolder viewHolder;
         private OnClickListener onClickListener;
         public Track(String trackId, String trackName,
-                     String albumId, String albumName,
-                     String artistId, String artistName) {
-            super(trackId, trackName, albumId, albumName, artistId, artistName);
+                     String trackDataFormat, String trackImageFormat,
+                     List<Album> albums, List<Artist> artists) {
+            super(trackId, trackName, trackDataFormat,
+                    trackImageFormat, albums, artists);
         }
         public Track(com.example.freeplayandroidclient.Track track) {
             super(track);
@@ -98,7 +99,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.text_row_item, viewGroup, false);
+                .inflate(R.layout.track_item, viewGroup, false);
         return new ViewHolder(view);
     }
     @Override
@@ -106,7 +107,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> 
         Track track = tracks.get(position);
         track.setViewHolder(viewHolder);
         String trackName = track.getTrackName();
-        String artistName = track.getArtistName();
+        String artistName = track.getArtists().get(0).getArtistName();
         if (trackName.length() > 25)
             trackName = trackName.substring(0, 25) + "...";
         if (artistName.length() > 25)

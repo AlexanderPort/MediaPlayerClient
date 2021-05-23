@@ -5,7 +5,6 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 
 public class DownloadsActivity extends Base {
-    private DatabaseHelper databaseHelper;
     private TrackRecyclerView trackRecyclerView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,7 +18,6 @@ public class DownloadsActivity extends Base {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        releaseMediaPlayer();
     }
     @Override
     public void onPrepared(MediaPlayer mp) {

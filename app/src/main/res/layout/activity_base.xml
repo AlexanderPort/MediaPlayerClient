@@ -3,8 +3,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_gravity="bottom"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -18,7 +19,8 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
-            android:id="@+id/mainLayout"
+            android:alpha="0.4"
+            android:id="@+id/homeLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -43,6 +45,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:alpha="0.4"
             android:id="@+id/searchLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -51,6 +54,7 @@
             android:weightSum="2">
 
             <ImageView
+
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -68,7 +72,8 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/mediaLayout"
+            android:alpha="0.4"
+            android:id="@+id/profileLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -87,12 +92,13 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Медиатека"
+                android:text="Профиль"
                 android:textColor="@color/white">
             </TextView>
         </LinearLayout>
 
         <LinearLayout
+            android:alpha="0.4"
             android:id="@+id/downloadsLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -121,12 +127,12 @@
         android:id="@+id/track"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0.1dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         android:background="@color/cardview_dark_background">
         <TextView
-            android:id="@+id/TrackArtist"
+            android:id="@+id/currentTrack"
             android:paddingTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -3,9 +3,13 @@ package com.example.freeplayandroidclient;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.PorterDuff;
 
 import androidx.annotation.NonNull;
 
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,91 +17,26 @@ import java.util.List;
 
 public class DatabaseHelper {
     private final Context context;
-    private static final Table ARTISTS = new Table(
-            "Artists",
-            new Column("id", "varchar(36)").primaryKey(true).notNull(true),
-            new Column("name", "varchar(255)").primaryKey(false).notNull(true)
-            );
-    private static final Table ALBUMS = new Table(
-            "Albums",
-            new Column("id", "varchar(36)").primaryKey(true).notNull(true),
-            new Column("name", "varchar(255)").primaryKey(false).notNull(true),
-            new Column("artist_id", "varchar(36)").foreignKey("Artists").notNull(false)
-    );
-    private static final Table TRACKS = new Table(
-            "Tracks",
-            new Column("id", "varchar(36)").primaryKey(true).notNull(true),
-            new Column("name", "varchar(255)").primaryKey(false).notNull(true),
-            new Column("album_id", "varchar(36)").foreignKey("Albums").notNull(false),
-            new Column("artist_id", "varchar(36)").foreignKey("Artists").notNull(false)
-    );
-    private static final String DATABASE_NAME = "database.db";
-
-    private static class Column {
-        private final String name;
-        private final String type;
-        private boolean notNull;
-        private String foreignKey;
-        private boolean primaryKey;
-        private Column(String name, String type) {
-            this.name = name;
-            this.type = type;
-            this.notNull = false;
-            this.foreignKey = null;
-            this.primaryKey = false;
-        }
-        public Column notNull(boolean notNull) {
-            this.notNull = notNull; return this;
-        }
-        public Column foreignKey(String foreignKey) {
-            this.foreignKey = foreignKey; return this;
-        }
-        public Column primaryKey(boolean primaryKey) {
-            this.primaryKey = primaryKey; return this;
-        }
-        public boolean isForeignKey() {
-            return foreignKey != null;
-        }
-        @NonNull
-        @Override
-        public String toString() {
-            String description = "";
-            description += name;
-            description += " " + type;
-            if (notNull) description += " NOT NULL";
-            if (primaryKey) description += " PRIMARY KEY";
-            return description;
-        }
-    }
-    private static class Table {
-        private final String name;
-        private final List<Column> columns;
-        public Table(String name, List<Column> columns) {
-            this.name = name;
-            this.columns = columns;
-        }
-        public Table(String name, Column... columns) {
-            this.name = name;
-            this.columns = Arrays.asList(columns);
-        }
-        public String createQuery() {
-            StringBuilder stringBuilder1 = new StringBuilder("(");
-            StringBuilder stringBuilder2 = new StringBuilder();
-            for (Column column : columns) {
-                stringBuilder1.append(column).append(", ");
-                if (column.isForeignKey()) {
-                    stringBuilder2.append(String.format(
-                            "FOREIGN KEY (%s) REFERENCES %s(id)",
-                            column.name, column.foreignKey
-                    )).append(", ");
-                }
-            }
-            stringBuilder1.append(stringBuilder2);
-            String description = stringBuilder1.toString()
-                    .substring(0, stringBuilder1.length() - 2);
-            return String.format("CREATE TABLE IF NOT EXISTS %s %s);", name, description);
-        }
-    }
+    private final String DATABASE_NAME = "database.db";
+    private final String ALBUM = "create table if not exists album(" +
+            "albumId varchar(36) not null primary key, albumName varchar(128) not null)";
+    private final String ARTIST = "create table if not exists artist(" +
+            "artistId varchar(36) not null primary key, artistName varchar(128) not null)";
+    private final String TRACK = "create table if not exists track(" +
+            "trackId varchar(36) not null primary key, trackName varchar(128) not null, " +
+            "trackDataFormat varchar(4) not null, trackImageFormat varchar(4) not null)";
+    private final String TRACK_ALBUM = "create table if not exists track_album(" +
+            "trackId varchar(36) not null, albumId varchar(36) not null, " +
+            "foreign key(trackId) references track(trackId), " +
+            "foreign key(albumId) references album(albumId))";
+    private final String TRACK_ARTIST = "create table if not exists track_artist(" +
+            "trackId varchar(36) not null, artistId varchar(36) not null, " +
+            "foreign key(trackId) references track(trackId), " +
+            "foreign key(artistId) references artist(artistId))";
+    private final String USER = "create table if not exists user(" +
+            "userId varchar(36) not null, userName varchar(128) not null," +
+            "userEmail varchar(32) not null, userPassword varchar(32) not null," +
+            "userStatus integer not null default 0, primary key(userId))";
 
     public DatabaseHelper(Context context) {
         this.context = context;
@@ -106,49 +45,105 @@ public class DatabaseHelper {
 
     public void onCreate() {
         SQLiteDatabase db = getDatabase();
-        //db.execSQL("DROP TABLE IF EXISTS Tracks");
-        //db.execSQL("DROP TABLE IF EXISTS Albums");
-        //db.execSQL("DROP TABLE IF EXISTS Artists");
-        db.execSQL(ARTISTS.createQuery());
-        db.execSQL(ALBUMS.createQuery());
-        db.execSQL(TRACKS.createQuery());
+        //db.execSQL("drop table if exists user");
+        //db.execSQL("drop table if exists track");
+        //db.execSQL("drop table if exists album");
+        //db.execSQL("drop table if exists artist");
+        //db.execSQL("drop table if exists track_album");
+        //db.execSQL("drop table if exists track_artist");
+        db.execSQL(USER);
+        db.execSQL(TRACK);
+        db.execSQL(ALBUM);
+        db.execSQL(ARTIST);
+        db.execSQL(TRACK_ALBUM);
+        db.execSQL(TRACK_ARTIST);
         db.close();
     }
-    public void insertArtist(String artistId, String artistName) {
+
+    public void insertUser(User user) {
         try {
             SQLiteDatabase db = getDatabase();
             String query = String.format(
-                    "INSERT INTO Artists VALUES ('%s', '%s');",
-                    artistId, artistName);
-            db.execSQL(query);
-            db.close();
+                    "INSERT INTO user VALUES ('%s', '%s', '%s', '%s', '%s');",
+                    user.getUserId(), user.getUserName(), user.getUserEmail(),
+                    user.getUserPassword(), user.getUserStatus() ? 1 : 0);
+            db.execSQL(query); db.close();
         } catch (Exception exception) {
             exception.printStackTrace();
         }
-
     }
-    public void insertAlbum(String albumId, String albumName, String artistId) {
+
+    public void updateUser(User user) {
         try {
             SQLiteDatabase db = getDatabase();
             String query = String.format(
-                    "INSERT INTO Albums VALUES ('%s', '%s', '%s');",
-                    albumId, albumName, artistId);
-            db.execSQL(query);
-            db.close();
+                    "UPDATE user SET userId='%s', userName='%s', userEmail='%s', " +
+                            "userPassword='%s', userStatus='%s' WHERE userId='%s'",
+                    user.getUserId(), user.getUserName(), user.getUserEmail(),
+                    user.getUserPassword(), user.getUserStatus() ? 1 : 0, user.getUserId());
+            db.execSQL(query); db.close();
         } catch (Exception exception) {
             exception.printStackTrace();
         }
-
     }
-    public void insertTrack(String trackId, String trackName, String albumId, String artistId) {
+
+    public User selectUser() {
+        SQLiteDatabase db = getDatabase();
+        Cursor cursor = db.rawQuery("select * from user", null);
+        while (cursor.moveToNext()) {
+            User user = new User();
+            user.setUserId(cursor.getString(0));
+            user.setUserName(cursor.getString(1));
+            user.setUserEmail(cursor.getString(2));
+            user.setUserPassword(cursor.getString(3));
+            user.setUserStatus(cursor.getInt(4) == 1);
+            return user;
+        } cursor.close(); db.close();
+        return null;
+    }
+
+    public void insertArtist(Artist artist) {
         try {
             SQLiteDatabase db = getDatabase();
-            if (albumId == null) albumId = "NULL";
-            if (artistId == null) artistId = "NULL";
             String query = String.format(
-                    "INSERT INTO Tracks VALUES ('%s', '%s', '%s', '%s');",
-                    trackId, trackName, albumId, artistId);
+                    "INSERT INTO artist VALUES ('%s', '%s');",
+                    artist.getArtistId(), artist.getArtistName());
+            db.execSQL(query); db.close();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+    }
+    public void insertAlbum(Album album) {
+        try {
+            SQLiteDatabase db = getDatabase();
+            String query = String.format(
+                    "INSERT INTO album VALUES ('%s', '%s');",
+                    album.getAlbumId(), album.getAlbumName());
+            db.execSQL(query); db.close();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+    }
+    public void insertTrack(Track track) {
+        try {
+            SQLiteDatabase db = getDatabase();
+            String query = String.format(
+                    "INSERT INTO track VALUES ('%s', '%s', '%s', '%s');",
+                    track.getTrackId(), track.getTrackName(),
+                    track.getTrackDataFormat(), track.getTrackImageFormat());
             db.execSQL(query);
+            for (Album album : track.getAlbums()) {
+                query = String.format(
+                        "INSERT INTO track_album VALUES ('%s', '%s');",
+                        track.getTrackId(), album.getAlbumId());
+                db.execSQL(query);
+            }
+            for (Artist artist : track.getArtists()) {
+                query = String.format(
+                        "INSERT INTO track_artist VALUES ('%s', '%s');",
+                        track.getTrackId(), artist.getArtistId());
+                db.execSQL(query);
+            }
             db.close();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -159,30 +154,42 @@ public class DatabaseHelper {
         SQLiteDatabase db = getDatabase();
         db.execSQL("DROP TABLE IF EXISTS " + TABLE);
     }
-
-     */
+    */
     public List<Track> selectAllTracks() {
         SQLiteDatabase db = getDatabase();
-        String query = "SELECT Tracks.id, Tracks.name, Albums.id, Albums.name, Artists.id, Artists.name \n" +
-                "FROM Tracks  \n" +
-                "LEFT JOIN Artists  \n" +
-                "ON Tracks.artist_id=Artists.id  \n" +
-                "LEFT JOIN Albums  \n" +
-                "ON Tracks.album_id = Albums.id;";
+        String trackQuery = "select * from track";
+        String albumQuery = "select album.albumId, album.albumName from track, album, track_album " +
+                "where track.trackId=track_album.trackId and album.albumId=track_album.albumId and track.trackId=";
+        String artistQuery = "select artist.artistId, artist.artistName from track, artist, track_artist " +
+                "where track.trackId=track_artist.trackId and artist.artistId=track_artist.artistId and track.trackId=";
         ArrayList<Track> tracks = new ArrayList<>();
-        Cursor cursor = db.rawQuery(query, null);
-        while (cursor.moveToNext()) {
-            String trackId = cursor.getString(0);
-            String trackName = cursor.getString(1);
-            String albumId = cursor.getString(2);
-            String albumName = cursor.getString(3);
-            String artistId = cursor.getString(4);
-            String artistName = cursor.getString(5);
-            tracks.add(new Track(trackId, trackName, albumId, albumName, artistId, artistName));
-        }
+        Cursor trackCursor = db.rawQuery(trackQuery, null);
+        while (trackCursor.moveToNext()) {
+            String trackId = trackCursor.getString(0);
+            String trackName = trackCursor.getString(1);
+            String trackDataFormat = trackCursor.getString(2);
+            String trackImageFormat = trackCursor.getString(3);
+            System.out.println(trackDataFormat);
+            Track track = new Track(trackId, trackName, trackDataFormat, trackImageFormat);
 
-        cursor.close();
-        db.close();
+            trackId = String.format("'%s'", trackId);
+
+            Cursor albumCursor = db.rawQuery(albumQuery + trackId, null);
+            while (albumCursor.moveToNext()) {
+                track.addAlbum(new Album(
+                        albumCursor.getString(0),
+                        albumCursor.getString(1)));
+            } albumCursor.close();
+
+            Cursor artistCursor = db.rawQuery(artistQuery + trackId, null);
+            while (artistCursor.moveToNext()) {
+                track.addArtist(new Artist(
+                        artistCursor.getString(0),
+                        artistCursor.getString(1)));
+            } artistCursor.close();
+            tracks.add(track);
+        }
+        trackCursor.close(); db.close();
         return tracks;
     }
     public SQLiteDatabase getDatabase() {

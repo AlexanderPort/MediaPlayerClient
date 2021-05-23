@@ -7,15 +7,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ActionsActivity">
-
-    <ImageView
+    <androidx.cardview.widget.CardView
         android:layout_marginTop="20dp"
         android:layout_marginBottom="10dp"
-        android:id="@+id/thumbnail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:srcCompat="@tools:sample/avatars">
-    </ImageView>
+        android:layout_gravity="center"
+        app:cardCornerRadius="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:scaleType="centerCrop"
+            android:id="@+id/thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:srcCompat="@tools:sample/avatars">
+        </ImageView>
+    </androidx.cardview.widget.CardView>
+
 
     <TextView
         android:id="@+id/trackName"
@@ -24,7 +31,7 @@
         android:paddingRight="30dp"
         android:textColor="@color/white"
         android:textStyle="bold"
-        android:textSize="20sp"
+        android:textSize="17.5sp"
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -35,7 +42,7 @@
         android:textColor="@color/white"
         android:layout_marginBottom="10dp"
         android:textStyle="bold"
-        android:textSize="20sp"
+        android:textSize="17.5sp"
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,7 +64,7 @@
             android:id="@+id/addInAlbum"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -80,7 +87,7 @@
             android:id="@+id/addInFavourites"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -103,7 +110,7 @@
             android:id="@+id/goToArtist"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -126,7 +133,7 @@
             android:id="@+id/share"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -149,19 +156,25 @@
             android:id="@+id/download"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical|left|start"
             android:text="Загрузить" />
     </LinearLayout>
-    <include
-        layout="@layout/activity_base"
-        android:layout_gravity="bottom"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    </include>
+        <include
+            layout="@layout/activity_base"
+            android:layout_gravity="bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </include>
+    </LinearLayout>
+
 
 
 </LinearLayout>
